@@ -11,4 +11,4 @@ html_handling = "none"
 [[d1_databases]]
 binding = "DB"
 database_name = "atomy-db"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "2d03afb9-ee89-4dc7-a574-8a92118cb324"
