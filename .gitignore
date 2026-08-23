@@ -1,0 +1,7 @@
+node_modules/
+.env
+secret.key
+atomy.db
+atomy.db-journal
+*.png
+pv_result.json

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>계보도</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+<header>
+  <a href="/tree.html" class="active">계보도</a>
+  <a href="/register.html">회원 등록</a>
+</header>
+<main>
+  <div class="tree-toolbar">
+    <input id="rootInput" placeholder="루트 회원ID 입력" />
+    <button id="loadBtn">불러오기</button>
+    <span class="msg" id="msg"></span>
+  </div>
+  <div class="tree-scroll">
+    <div id="treeContainer"></div>
+  </div>
+</main>
+<script src="/tree.js"></script>
+</body>
+</html>

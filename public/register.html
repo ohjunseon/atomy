@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>회원정보 조회</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+<header>
+  <a href="/tree.html">계보도</a>
+  <a href="/register.html" class="active">회원정보 조회</a>
+</header>
+<main>
+  <div class="list-toolbar">
+    <div class="search-group">
+      <input id="searchInput" placeholder="회원ID 또는 이름으로 검색" />
+      <button id="searchBtn" class="btn-secondary">조회</button>
+    </div>
+    <button id="openAddBtn">+ 회원 등록</button>
+  </div>
+
+  <table class="member-table">
+    <thead>
+      <tr><th>회원ID</th><th>이름</th><th>좌측ID</th><th>우측ID</th><th></th></tr>
+    </thead>
+    <tbody id="memberRows"></tbody>
+  </table>
+</main>
+
+<div id="modalOverlay" class="modal-overlay">
+  <div class="modal">
+    <div id="formTitle" class="modal-title">회원 등록</div>
+
+    <label>회원ID *</label>
+    <input id="memberId" placeholder="예: 15531370" />
+
+    <label>이름</label>
+    <input id="name" placeholder="예: 홍길동" />
+
+    <label>좌측ID</label>
+    <input id="leftId" placeholder="좌측 자리에 들어갈 회원ID" />
+
+    <label>우측ID</label>
+    <input id="rightId" placeholder="우측 자리에 들어갈 회원ID" />
+
+    <div class="hint">좌측ID/우측ID는 아직 등록되지 않은 ID를 입력해도 됩니다(빈 자리로 표시됨).</div>
+
+    <div class="modal-actions">
+      <button id="cancelBtn" class="btn-secondary">취소</button>
+      <button id="saveBtn">저장</button>
+    </div>
+  </div>
+</div>
+
+<script src="/register.js"></script>
+</body>
+</html>
