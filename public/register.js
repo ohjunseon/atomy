@@ -13,6 +13,11 @@ const searchInput = document.getElementById('searchInput');
 let editingId = null;
 let allMembers = [];
 
+document.getElementById('logoutLink').addEventListener('click', async () => {
+  await fetch('/api/logout', { method: 'POST' });
+  location.href = '/login.html';
+});
+
 function openModal() {
   modalOverlay.classList.add('open');
   memberIdInput.focus();

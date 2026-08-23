@@ -3,6 +3,11 @@ const rootInput = document.getElementById('rootInput');
 const loadBtn = document.getElementById('loadBtn');
 const msg = document.getElementById('msg');
 
+document.getElementById('logoutLink').addEventListener('click', async () => {
+  await fetch('/api/logout', { method: 'POST' });
+  location.href = '/login.html';
+});
+
 function maskId(id) {
   if (!id) return '';
   const last4 = id.slice(-4);

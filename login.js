@@ -1,21 +1,45 @@
+const fs = require('fs');
+const path = require('path');
 const { chromium } = require('playwright');
-const { getDb, getAllMembers, getPassword } = require('./db');
 
-function loadCredentials() {
-  const db = getDb();
-  const members = getAllMembers(db);
+const ADMIN_ID = 'atomy';
+const ADMIN_PW = 'so797979!';
+
+function loadEnv() {
+  const raw = fs.readFileSync(path.join(__dirname, '.env'), 'utf-8');
+  const env = {};
+  for (const key of ['worker_url', 'atomy_pw']) {
+    const m = raw.match(new RegExp(`${key}\\s*=\\s*(\\S+)`));
+    if (m) env[key] = m[1];
+  }
+  return env;
+}
+
+async function loadCredentials() {
+  const env = loadEnv();
+  if (!env.worker_url) throw new Error('.env에 worker_url을 설정하세요 (예: https://atomy.xxx.workers.dev)');
+  if (!env.atomy_pw) throw new Error('.env에 atomy_pw를 설정하세요.');
+
+  const loginRes = await fetch(`${env.worker_url}/api/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: ADMIN_ID, password: ADMIN_PW }),
+  });
+  if (!loginRes.ok) throw new Error('Worker 로그인 실패');
+  const cookie = loginRes.headers.get('set-cookie').split(';')[0];
+
+  const membersRes = await fetch(`${env.worker_url}/api/members`, { headers: { Cookie: cookie } });
+  if (!membersRes.ok) throw new Error('회원 목록 조회 실패');
+  const members = await membersRes.json();
   if (members.length === 0) {
-    db.close();
     throw new Error('등록된 회원이 없습니다. 회원정보 조회 화면에서 먼저 등록하세요.');
   }
-  const userId = members[0].member_id;
-  const password = getPassword(db, userId);
-  db.close();
-  return { userId, password };
+
+  return { userId: members[0].member_id, password: env.atomy_pw };
 }
 
 async function main() {
-  const { userId, password } = loadCredentials();
+  const { userId, password } = await loadCredentials();
 
   const browser = await chromium.launch({ headless: false, slowMo: 100 });
   const context = await browser.newContext();

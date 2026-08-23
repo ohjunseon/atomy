@@ -1,26 +1,55 @@
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
-const { getDb, getAllMembers, getPassword, insertPvRecord, upsertMemberPv } = require('./db');
+
+const ADMIN_ID = 'atomy';
+const ADMIN_PW = 'so797979!';
 
 function loadEnv() {
   const raw = fs.readFileSync(path.join(__dirname, '.env'), 'utf-8');
   const env = {};
 
-  for (const key of ['login_site', 'site1', 'site2', 'event1']) {
+  for (const key of ['login_site', 'site1', 'site2', 'event1', 'worker_url', 'atomy_pw']) {
     const m = raw.match(new RegExp(`${key}\\s*=\\s*(\\S+)`));
     if (m) env[key] = m[1];
   }
 
-  const db = getDb();
-  const members = getAllMembers(db);
-  env.users = members.map((m) => ({
-    userId: m.member_id,
-    password: getPassword(db, m.member_id),
-  }));
-  db.close();
+  if (!env.worker_url) throw new Error('.env에 worker_url을 설정하세요 (예: https://atomy.xxx.workers.dev)');
+  if (!env.atomy_pw) throw new Error('.env에 atomy_pw를 설정하세요.');
 
   return env;
+}
+
+async function apiLogin(workerUrl) {
+  const res = await fetch(`${workerUrl}/api/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: ADMIN_ID, password: ADMIN_PW }),
+  });
+  if (!res.ok) throw new Error('Worker 로그인 실패');
+  const setCookie = res.headers.get('set-cookie');
+  if (!setCookie) throw new Error('세션 쿠키를 받지 못했습니다.');
+  return setCookie.split(';')[0];
+}
+
+async function fetchMembers(workerUrl, cookie) {
+  const res = await fetch(`${workerUrl}/api/members`, { headers: { Cookie: cookie } });
+  if (!res.ok) throw new Error('회원 목록 조회 실패');
+  return res.json();
+}
+
+async function pushPv(workerUrl, cookie, result) {
+  await fetch(`${workerUrl}/api/pv`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Cookie: cookie },
+    body: JSON.stringify({
+      memberId: result.userId,
+      selfPv: result.selfPv,
+      leftPv: result.leftPv,
+      rightPv: result.rightPv,
+      cumulativePv: result.cumulativePv,
+    }),
+  });
 }
 
 async function loginAndGetPv(browser, env, user) {
@@ -89,35 +118,25 @@ async function loginAndGetPv(browser, env, user) {
 
 async function main() {
   const env = loadEnv();
-  if (env.users.length === 0) {
+  const cookie = await apiLogin(env.worker_url);
+  const members = await fetchMembers(env.worker_url, cookie);
+
+  if (members.length === 0) {
     throw new Error('등록된 회원이 없습니다. 회원정보 조회 화면에서 먼저 등록하세요.');
   }
 
   const browser = await chromium.launch({ headless: false, slowMo: 50 });
   const results = [];
-  const pvDb = getDb();
 
-  for (const user of env.users) {
+  for (const m of members) {
+    const user = { userId: m.member_id, password: env.atomy_pw };
     console.log(`\n[${user.userId}] 로그인 중...`);
     const result = await loginAndGetPv(browser, env, user);
     if (result.success) {
       console.log(
         `[${user.userId}] 본인 PV: ${result.selfPv} / 좌 PV: ${result.leftPv} / 우 PV: ${result.rightPv} / 누적 PV: ${result.cumulativePv}`
       );
-      upsertMemberPv(pvDb, {
-        memberId: user.userId,
-        selfPv: result.selfPv,
-        leftPv: result.leftPv,
-        rightPv: result.rightPv,
-        cumulativePv: result.cumulativePv,
-      });
-      insertPvRecord(pvDb, {
-        userId: user.userId,
-        selfPv: result.selfPv,
-        leftPv: result.leftPv,
-        rightPv: result.rightPv,
-        cumulativePv: result.cumulativePv,
-      });
+      await pushPv(env.worker_url, cookie, result);
       if (result.screenshot && fs.existsSync(result.screenshot)) {
         fs.unlinkSync(result.screenshot);
       }
@@ -127,7 +146,6 @@ async function main() {
     results.push(result);
   }
 
-  pvDb.close();
   await browser.close();
 
   console.log('\n===== 요약 =====');
