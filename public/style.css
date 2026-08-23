@@ -160,7 +160,7 @@ table.member-table tr.edit-row:hover { background: #f7fbf8; }
 
 .tree-scroll {
   overflow-x: auto;
-  padding: 6px 0 40px 0;
+  padding: 30px 0 40px 0;
 }
 
 .card {
@@ -182,9 +182,10 @@ table.member-table tr.edit-row:hover { background: #f7fbf8; }
 }
 
 .card .name { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
-.card .masked-id { font-size: 12px; color: #999; margin-bottom: 10px; }
+.card .member-id { font-size: 12px; color: #999; margin-bottom: 10px; }
 
 .pv-row { display: flex; gap: 8px; }
+.pv-row + .pv-row { margin-top: 6px; }
 .pv-box {
   flex: 1;
   text-align: center;
@@ -194,6 +195,8 @@ table.member-table tr.edit-row:hover { background: #f7fbf8; }
 }
 .pv-box .pv-label { color: #666; margin-bottom: 2px; }
 .pv-box .pv-value { font-weight: 700; }
+.pv-box.self { background: #fdecd2; }
+.pv-box.cumulative { background: #fde2e2; }
 .pv-box.left { background: #dceafb; }
 .pv-box.right { background: #ece3f7; }
 

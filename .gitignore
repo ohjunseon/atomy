@@ -6,5 +6,6 @@ session.key
 .wrangler/
 atomy.db
 atomy.db-journal
+atomy_dbeaver.sqlite
 *.png
 pv_result.json

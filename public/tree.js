@@ -8,12 +8,6 @@ document.getElementById('logoutLink').addEventListener('click', async () => {
   location.href = '/login.html';
 });
 
-function maskId(id) {
-  if (!id) return '';
-  const last4 = id.slice(-4);
-  return '----' + last4;
-}
-
 function fmtPv(v) {
   return v === null || v === undefined || v === '' ? '0' : v;
 }
@@ -23,7 +17,7 @@ function buildCard(node, isRoot) {
 
   if (node.unregistered) {
     card.className = 'card unregistered';
-    card.innerHTML = `<div>미등록</div><div class="masked-id">${maskId(node.memberId)}</div>`;
+    card.innerHTML = `<div>미등록</div><div class="member-id">${node.memberId || ''}</div>`;
     return card;
   }
 
@@ -31,7 +25,17 @@ function buildCard(node, isRoot) {
 
   card.innerHTML = `
     <div class="name">${node.name || node.memberId}</div>
-    <div class="masked-id">${maskId(node.memberId)}</div>
+    <div class="member-id">${node.memberId}</div>
+    <div class="pv-row">
+      <div class="pv-box self">
+        <div class="pv-label">본인</div>
+        <div class="pv-value">${fmtPv(node.selfPv)}</div>
+      </div>
+      <div class="pv-box cumulative">
+        <div class="pv-label">누적</div>
+        <div class="pv-value">${fmtPv(node.cumulativePv)}</div>
+      </div>
+    </div>
     <div class="pv-row">
       <div class="pv-box left">
         <div class="pv-label">좌측</div>
